@@ -55,13 +55,13 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         try {
             const fileName = `${Date.now()}-${file.name}`;
             const { error: uploadError } = await supabase.storage
-                .from('portfolio-images') // Ganti dengan nama bucket Anda
+                .from('portofolio-images') // Ganti dengan nama bucket Anda
                 .upload(fileName, file);
 
             if (uploadError) throw uploadError;
 
             const { data } = supabase.storage
-                .from('portfolio-images') // Ganti dengan nama bucket Anda
+                .from('portofolio-images') // Ganti dengan nama bucket Anda
                 .getPublicUrl(fileName);
 
             return data.publicUrl;
