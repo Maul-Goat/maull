@@ -4,8 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 // !! PENTING !!
 // Ganti nilai di bawah ini dengan URL Proyek dan Kunci Anon (publik) Supabase Anda.
 // Anda bisa mendapatkannya dari dasbor proyek Supabase Anda di bawah "Project Settings" > "API".
-const supabaseUrl = 'https://REPLACE_WITH_YOUR_SUPABASE_URL.supabase.co'; // Ganti dengan URL Anda, contoh: 'https://xyz.supabase.co'
-const supabaseAnonKey = 'REPLACE_WITH_YOUR_SUPABASE_ANON_KEY'; // Ganti dengan Kunci Anon Anda
+const supabaseUrl = 'https://lqcrvwvzkgafxjnierfu.supabase.co'; // Ganti dengan URL Anda, contoh: 'https://xyz.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxY3J2d3Z6a2dhZnhqbmllcmZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyOTgzMjQsImV4cCI6MjA3ODg3NDMyNH0.xyf-dKLiiqBdlF6-BVrLLKUHFvYzHPka5KdfyDY3e4E'; // Ganti dengan Kunci Anon Anda
 
 // Pemeriksaan ini membantu pengembang mengingat untuk mengkonfigurasi kredensial Supabase mereka.
 if (supabaseUrl.includes('REPLACE_WITH_YOUR_SUPABASE_URL')) {
