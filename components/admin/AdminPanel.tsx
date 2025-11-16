@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Skill, PortfolioItem, TopEdit, Message, HeroContent } from '../../types';
@@ -55,24 +54,25 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         fetchData();
     }, []);
 
-    const uploadImage = async (file: File): Promise<string | null> => {
+    const uploadFile = async (file: File, bucket: string): Promise<string | null> => {
         try {
             const fileName = `${Date.now()}-${file.name}`;
             const { error: uploadError } = await supabase.storage
-                .from('portofolio-images')
+                .from(bucket)
                 .upload(fileName, file);
 
             if (uploadError) throw uploadError;
 
             const { data } = supabase.storage
-                .from('portofolio-images')
+                .from(bucket)
                 .getPublicUrl(fileName);
 
             return data.publicUrl;
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-            console.error('Error uploading image: ', errorMessage);
-            alert('Error uploading image: ' + errorMessage);
+            const friendlyMessage = `Error uploading file to bucket "${bucket}": ${errorMessage}. Please ensure the bucket exists and has the correct policies in your Supabase dashboard.`;
+            console.error(friendlyMessage);
+            alert(friendlyMessage);
             return null;
         }
     };
@@ -92,12 +92,22 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         let finalData = { ...data };
 
         if (file) {
-            const imageUrl = await uploadImage(file);
-            if (!imageUrl) {
-                setLoading(false);
-                return; // Stop if image upload fails
+            let bucketName = 'portfolio-images'; // Default bucket for skills
+
+            if (table === 'portfolio_items') {
+                bucketName = 'portfolio-bucket';
+            } else if (table === 'top_edits') {
+                const bucketIndex = Math.floor(topEdits.length / 3) + 1;
+                bucketName = `top-edits-${bucketIndex}`;
+                console.log(`Attempting to upload to bucket: ${bucketName}. This bucket must exist in Supabase.`);
             }
-            finalData.img_url = imageUrl;
+
+            const fileUrl = await uploadFile(file, bucketName);
+            if (!fileUrl) {
+                setLoading(false);
+                return; // Stop if file upload fails
+            }
+            (finalData as { img_url?: string }).img_url = fileUrl;
         }
         
         const { error } = await supabase.from(table).insert([finalData]);
@@ -123,7 +133,7 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         const oldImageUrl = heroContent?.image_url; // Simpan URL gambar lama
 
         if (heroImageFile) {
-            const newImageUrl = await uploadImage(heroImageFile);
+            const newImageUrl = await uploadFile(heroImageFile, 'portfolio-images');
             if (!newImageUrl) {
                 setLoading(false);
                 return; // Hentikan jika unggahan gagal
@@ -144,16 +154,23 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
             // Hapus gambar lama HANYA JIKA pembaruan berhasil DAN ada gambar baru yang diunggah
             if (heroImageFile && oldImageUrl) {
                 try {
-                    const filePath = oldImageUrl.split('/portfolio-images/')[1];
-                    if (filePath) {
+                    const url = new URL(oldImageUrl);
+                    const pathParts = url.pathname.split('/');
+                    const publicIndex = pathParts.indexOf('public');
+
+                    if (publicIndex !== -1 && pathParts.length > publicIndex + 2) {
+                        const bucketName = pathParts[publicIndex + 1];
+                        const filePath = pathParts.slice(publicIndex + 2).join('/');
+                        
                         const { error: deleteError } = await supabase.storage
-                            .from('portfolio-images')
+                            .from(bucketName)
                             .remove([filePath]);
 
                         if (deleteError) {
-                            // Tidak perlu menakuti pengguna, cukup catat di konsol
                             console.warn("Failed to delete old hero image:", deleteError.message);
                         }
+                    } else {
+                        console.warn("Could not parse bucket/path from old URL:", oldImageUrl);
                     }
                 } catch (e) {
                     console.error("Error parsing or deleting old image URL:", e);
@@ -261,7 +278,7 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                             <h3 className="font-bold">Add New Top Edit</h3>
                             <input value={newTopEdit.title} onChange={e => setNewTopEdit({...newTopEdit, title: e.target.value})} placeholder="Title" className="w-full p-2 border rounded" required/>
                             <textarea value={newTopEdit.description} onChange={e => setNewTopEdit({...newTopEdit, description: e.target.value})} placeholder="Description" className="w-full p-2 border rounded" required/>
-                            <input type="file" accept="image/*" onChange={handleFileChange(setNewTopEditFile)} className="w-full p-2 border rounded" required />
+                            <input type="file" accept="image/*,video/*" onChange={handleFileChange(setNewTopEditFile)} className="w-full p-2 border rounded" required />
                             <button type="submit" className="px-4 py-2 bg-pink-500 text-white rounded" disabled={loading}>{loading ? 'Adding...' : 'Add Edit'}</button>
                         </form>
                     </div>
