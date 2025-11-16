@@ -41,7 +41,16 @@ const About = forwardRef<HTMLElement>((props, ref) => {
         </div>
         <div className={`bg-white/10 p-8 rounded-2xl backdrop-blur-md border border-white/25 text-center slide-in-bottom ${isInView ? 'in-view' : ''}`} style={{ animationDelay: '0.3s' }}>
           <p className="text-[#5c3d2e] text-base md:text-lg leading-loose font-normal">
-            With over 5 years of experience in digital production and web development, I've had the privilege of collaborating with brands and creators to bring their visions to life. My approach combines technical precision with creative storytelling, ensuring every project leaves a lasting impact. Whether it's crafting immersive web experiences or producing cinematic content, I'm passionate about pushing creative boundaries and delivering excellence in every endeavor.
+            I'm a passionate tech enthusiast currently pursuing my university degree while balancing my twin passions for coding and video editing. My journey in programming has equipped me with problem-solving skills that complement my creative side, which thrives in visual storytelling through video production.
+                    </p>
+                    <p>
+                        As a student, I'm constantly expanding my knowledge in both technical and creative domains. I approach coding challenges with the same attention to detail that I apply when crafting seamless video transitions. Whether I'm debugging code or color grading footage, I find joy in the process of creating something meaningful from scratch.
+                    </p>
+                    <p>
+                        My academic journey provides me with a solid foundation, while my hands-on experience in development and video editing represents my commitment to practical skill-building. I believe in continuous learning and constantly push myself to explore new technologies and techniques.
+                    </p>
+                    <p>
+                        I'm excited to connect with like-minded individuals and organizations who share my enthusiasm for technology and visual arts. Let's create something amazing together!
           </p>
         </div>
       </div>
