@@ -59,13 +59,13 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         try {
             const fileName = `${Date.now()}-${file.name}`;
             const { error: uploadError } = await supabase.storage
-                .from('portfolio-images')
+                .from('portofolio-images')
                 .upload(fileName, file);
 
             if (uploadError) throw uploadError;
 
             const { data } = supabase.storage
-                .from('portfolio-images')
+                .from('portofolio-images')
                 .getPublicUrl(fileName);
 
             return data.publicUrl;
