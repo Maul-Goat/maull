@@ -1,8 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Skill, PortfolioItem, TopEdit, Message, HeroContent } from '../../types';
 
 type Tab = 'hero' | 'skills' | 'portfolio' | 'top-edits' | 'messages';
+
+type AddableData = Partial<Omit<Skill, 'id'>> | Partial<Omit<PortfolioItem, 'id'>> | Partial<Omit<TopEdit, 'id'>>;
+
 
 const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     const [activeTab, setActiveTab] = useState<Tab>('hero');
@@ -25,7 +29,7 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     const [newTopEdit, setNewTopEdit] = useState({ title: '', description: '', img_url: '' });
     const [newTopEditFile, setNewTopEditFile] = useState<File | null>(null);
     
-    const [heroForm, setHeroForm] = useState({ title: '', subtitle: '', description: '', image_url: '' });
+    const [heroForm, setHeroForm] = useState<HeroContent>({ id: 1, title: '', subtitle: '', description: '', image_url: '' });
     const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
 
 
@@ -55,19 +59,20 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         try {
             const fileName = `${Date.now()}-${file.name}`;
             const { error: uploadError } = await supabase.storage
-                .from('portofolio-images') // Ganti dengan nama bucket Anda
+                .from('portfolio-images')
                 .upload(fileName, file);
 
             if (uploadError) throw uploadError;
 
             const { data } = supabase.storage
-                .from('portofolio-images') // Ganti dengan nama bucket Anda
+                .from('portfolio-images')
                 .getPublicUrl(fileName);
 
             return data.publicUrl;
         } catch (error) {
-            console.error('Error uploading image: ', error);
-            alert('Error uploading image: ' + (error as Error).message);
+            const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+            console.error('Error uploading image: ', errorMessage);
+            alert('Error uploading image: ' + errorMessage);
             return null;
         }
     };
@@ -82,7 +87,7 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         }
     };
 
-    const handleAdd = async (table: string, data: any, file: File | null) => {
+    const handleAdd = async (table: string, data: AddableData, file: File | null) => {
         setLoading(true);
         let finalData = { ...data };
 
@@ -115,25 +120,46 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         e.preventDefault();
         setLoading(true);
         let updatedData = { ...heroForm };
+        const oldImageUrl = heroContent?.image_url; // Simpan URL gambar lama
 
         if (heroImageFile) {
-            const imageUrl = await uploadImage(heroImageFile);
-            if (!imageUrl) {
+            const newImageUrl = await uploadImage(heroImageFile);
+            if (!newImageUrl) {
                 setLoading(false);
-                return; // Stop if upload fails
+                return; // Hentikan jika unggahan gagal
             }
-            updatedData.image_url = imageUrl;
+            updatedData.image_url = newImageUrl;
         }
 
         const { error } = await supabase
             .from('hero_content')
             .update(updatedData)
-            .eq('id', 1);
+            .eq('id', heroContent?.id || 1);
             
         if (error) {
             alert('Error updating hero content: ' + error.message);
         } else {
             alert('Hero content updated successfully!');
+            
+            // Hapus gambar lama HANYA JIKA pembaruan berhasil DAN ada gambar baru yang diunggah
+            if (heroImageFile && oldImageUrl) {
+                try {
+                    const filePath = oldImageUrl.split('/portfolio-images/')[1];
+                    if (filePath) {
+                        const { error: deleteError } = await supabase.storage
+                            .from('portfolio-images')
+                            .remove([filePath]);
+
+                        if (deleteError) {
+                            // Tidak perlu menakuti pengguna, cukup catat di konsol
+                            console.warn("Failed to delete old hero image:", deleteError.message);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error parsing or deleting old image URL:", e);
+                }
+            }
+
             setHeroImageFile(null);
             await fetchData();
         }

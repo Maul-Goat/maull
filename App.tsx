@@ -13,12 +13,14 @@ import Admin from './components/admin/Admin';
 import { supabase } from './lib/supabase';
 import { Skill, PortfolioItem, TopEdit, HeroContent } from './types';
 
-const PortfolioSite: React.FC<{
+interface PortfolioSiteProps {
   skills: Skill[];
   portfolioItems: PortfolioItem[];
   topEdits: TopEdit[];
   heroContent: HeroContent | null;
-}> = ({ skills, portfolioItems, topEdits, heroContent }) => {
+}
+
+const PortfolioSite: React.FC<PortfolioSiteProps> = ({ skills, portfolioItems, topEdits, heroContent }) => {
   const homeRef = useRef<HTMLElement>(null);
   const aboutRef = useRef<HTMLElement>(null);
   const skillsRef = useRef<HTMLElement>(null);
@@ -26,7 +28,7 @@ const PortfolioSite: React.FC<{
   const topEditsRef = useRef<HTMLElement>(null);
   const contactRef = useRef<HTMLElement>(null);
 
-  const sections = {
+  const sections: { [key: string]: React.RefObject<HTMLElement> } = {
     home: homeRef,
     about: aboutRef,
     skills: skillsRef,
@@ -71,15 +73,15 @@ const App: React.FC = () => {
       try {
         const { data: skillsData, error: skillsError } = await supabase.from('skills').select('*').order('id');
         if (skillsError) throw skillsError;
-        setSkills(skillsData);
+        setSkills(skillsData || []);
 
         const { data: portfolioData, error: portfolioError } = await supabase.from('portfolio_items').select('*').order('id');
         if (portfolioError) throw portfolioError;
-        setPortfolioItems(portfolioData);
+        setPortfolioItems(portfolioData || []);
 
         const { data: editsData, error: editsError } = await supabase.from('top_edits').select('*').order('id');
         if (editsError) throw editsError;
-        setTopEdits(editsData);
+        setTopEdits(editsData || []);
 
         const { data: heroData, error: heroError } = await supabase.from('hero_content').select('*').single();
         if (heroError) throw heroError;

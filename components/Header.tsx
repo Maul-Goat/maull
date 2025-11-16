@@ -9,7 +9,9 @@ interface HeaderProps {
   sections: Sections;
 }
 
-const navLinks = [
+type NavLinkHref = 'home' | 'about' | 'skills' | 'portfolio' | 'top-edits' | 'contact';
+
+const navLinks: { href: NavLinkHref, label: string }[] = [
   { href: 'home', label: 'Home' },
   { href: 'about', label: 'About' },
   { href: 'skills', label: 'Skills' },
@@ -21,7 +23,7 @@ const navLinks = [
 const Header: React.FC<HeaderProps> = ({ sections }) => {
   const [isNavOpen, setIsNavOpen] = useState(false);
 
-  const handleScrollTo = (id: string) => {
+  const handleScrollTo = (id: NavLinkHref) => {
     sections[id]?.current?.scrollIntoView({
       behavior: 'smooth',
     });
