@@ -1,4 +1,3 @@
-
 export interface Skill {
   id: number;
   name: string;
@@ -26,4 +25,12 @@ export interface Message {
   name: string;
   email: string;
   message: string;
+}
+
+export interface HeroContent {
+  id: number;
+  title: string;
+  subtitle: string;
+  description: string;
+  image_url: string;
 }

@@ -1,23 +1,24 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Skill, PortfolioItem, TopEdit, Message } from '../../types';
+import { Skill, PortfolioItem, TopEdit, Message, HeroContent } from '../../types';
 
-type Tab = 'skills' | 'portfolio' | 'top-edits' | 'messages';
+type Tab = 'hero' | 'skills' | 'portfolio' | 'top-edits' | 'messages';
 
 const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
-    const [activeTab, setActiveTab] = useState<Tab>('messages');
+    const [activeTab, setActiveTab] = useState<Tab>('hero');
     
     // Data states
     const [skills, setSkills] = useState<Skill[]>([]);
     const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
     const [topEdits, setTopEdits] = useState<TopEdit[]>([]);
     const [messages, setMessages] = useState<Message[]>([]);
+    const [heroContent, setHeroContent] = useState<HeroContent | null>(null);
 
     // Form states
     const [newSkill, setNewSkill] = useState({ name: '', img_url: '' });
     const [newPortfolio, setNewPortfolio] = useState({ title: '', description: '', img_url: '', project_url: '' });
     const [newTopEdit, setNewTopEdit] = useState({ title: '', description: '', img_url: '' });
+    const [heroForm, setHeroForm] = useState({ title: '', subtitle: '', description: '', image_url: '' });
 
     const fetchData = async () => {
         const { data: skillsData } = await supabase.from('skills').select('*').order('id');
@@ -28,6 +29,11 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         setTopEdits(editsData || []);
         const { data: messagesData } = await supabase.from('messages').select('*').order('created_at', { ascending: false });
         setMessages(messagesData || []);
+        const { data: heroData } = await supabase.from('hero_content').select('*').single();
+        if (heroData) {
+            setHeroContent(heroData);
+            setHeroForm(heroData);
+        }
     };
 
     useEffect(() => {
@@ -54,8 +60,52 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         }
     };
     
+    const handleUpdateHero = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const { error } = await supabase
+            .from('hero_content')
+            .update(heroForm)
+            .eq('id', 1);
+        if (error) {
+            alert('Error updating hero content: ' + error.message);
+        } else {
+            alert('Hero content updated successfully!');
+            fetchData();
+        }
+    };
+
+    const handleHeroFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setHeroForm({ ...heroForm, [e.target.name]: e.target.value });
+    };
+
     const renderContent = () => {
         switch (activeTab) {
+            case 'hero':
+                return (
+                    <div>
+                        <h2 className="text-xl font-bold mb-4">Manage Hero Section</h2>
+                        <form onSubmit={handleUpdateHero} className="p-4 border rounded bg-gray-50 space-y-3">
+                            <div>
+                                <label className="block font-semibold mb-1">Title</label>
+                                <input name="title" value={heroForm.title} onChange={handleHeroFormChange} className="w-full p-2 border rounded" required />
+                                <p className="text-xs text-gray-500 mt-1">You can use HTML tags like `&lt;br /&gt;` and `&lt;span&gt;` for styling.</p>
+                            </div>
+                             <div>
+                                <label className="block font-semibold mb-1">Subtitle</label>
+                                <input name="subtitle" value={heroForm.subtitle} onChange={handleHeroFormChange} className="w-full p-2 border rounded" required />
+                            </div>
+                             <div>
+                                <label className="block font-semibold mb-1">Description</label>
+                                <textarea name="description" value={heroForm.description} onChange={handleHeroFormChange} rows={3} className="w-full p-2 border rounded" required></textarea>
+                            </div>
+                            <div>
+                                <label className="block font-semibold mb-1">Profile Image URL</label>
+                                <input name="image_url" value={heroForm.image_url} onChange={handleHeroFormChange} className="w-full p-2 border rounded" required />
+                            </div>
+                            <button type="submit" className="px-4 py-2 bg-pink-500 text-white rounded">Save Changes</button>
+                        </form>
+                    </div>
+                );
             case 'messages':
                 return (
                     <div>
@@ -66,6 +116,7 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                                     <p className="font-bold">{msg.name} <span className="font-normal text-gray-500">&lt;{msg.email}&gt;</span></p>
                                     <p className="text-sm text-gray-500">{new Date(msg.created_at).toLocaleString()}</p>
                                     <p className="mt-2">{msg.message}</p>
+                                    <button onClick={() => handleDelete('messages', msg.id)} className="text-red-500 text-xs mt-2">Delete</button>
                                 </div>
                             ))}
                         </div>
@@ -96,7 +147,7 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                         <form onSubmit={(e) => { e.preventDefault(); handleAdd('portfolio_items', newPortfolio); }} className="p-4 border rounded bg-gray-50 space-y-3">
                             <h3 className="font-bold">Add New Portfolio Item</h3>
                             <input value={newPortfolio.title} onChange={e => setNewPortfolio({...newPortfolio, title: e.target.value})} placeholder="Title" className="w-full p-2 border rounded" required/>
-                            <input value={newPortfolio.description} onChange={e => setNewPortfolio({...newPortfolio, description: e.target.value})} placeholder="Description" className="w-full p-2 border rounded" required/>
+                            <textarea value={newPortfolio.description} onChange={e => setNewPortfolio({...newPortfolio, description: e.target.value})} placeholder="Description" className="w-full p-2 border rounded" required/>
                             <input value={newPortfolio.img_url} onChange={e => setNewPortfolio({...newPortfolio, img_url: e.target.value})} placeholder="Image URL" className="w-full p-2 border rounded" required/>
                             <input value={newPortfolio.project_url} onChange={e => setNewPortfolio({...newPortfolio, project_url: e.target.value})} placeholder="Project URL" className="w-full p-2 border rounded" />
                             <button type="submit" className="px-4 py-2 bg-pink-500 text-white rounded">Add Item</button>
@@ -113,7 +164,7 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                         <form onSubmit={(e) => { e.preventDefault(); handleAdd('top_edits', newTopEdit); }} className="p-4 border rounded bg-gray-50 space-y-3">
                             <h3 className="font-bold">Add New Top Edit</h3>
                             <input value={newTopEdit.title} onChange={e => setNewTopEdit({...newTopEdit, title: e.target.value})} placeholder="Title" className="w-full p-2 border rounded" required/>
-                            <input value={newTopEdit.description} onChange={e => setNewTopEdit({...newTopEdit, description: e.target.value})} placeholder="Description" className="w-full p-2 border rounded" required/>
+                            <textarea value={newTopEdit.description} onChange={e => setNewTopEdit({...newTopEdit, description: e.target.value})} placeholder="Description" className="w-full p-2 border rounded" required/>
                             <input value={newTopEdit.img_url} onChange={e => setNewTopEdit({...newTopEdit, img_url: e.target.value})} placeholder="Image URL" className="w-full p-2 border rounded" required/>
                             <button type="submit" className="px-4 py-2 bg-pink-500 text-white rounded">Add Edit</button>
                         </form>
@@ -135,7 +186,8 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                 <button onClick={onLogout} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Logout</button>
             </header>
             <main className="p-8 max-w-4xl mx-auto">
-                <div className="flex border-b mb-4">
+                <div className="flex border-b mb-4 flex-wrap">
+                    <TabButton tabName="hero" label="Hero" />
                     <TabButton tabName="messages" label="Messages" />
                     <TabButton tabName="skills" label="Skills" />
                     <TabButton tabName="portfolio" label="Portfolio" />

@@ -11,13 +11,14 @@ import Footer from './components/Footer';
 import TopoCanvas from './components/TopoCanvas';
 import Admin from './components/admin/Admin';
 import { supabase } from './lib/supabase';
-import { Skill, PortfolioItem, TopEdit } from './types';
+import { Skill, PortfolioItem, TopEdit, HeroContent } from './types';
 
 const PortfolioSite: React.FC<{
   skills: Skill[];
   portfolioItems: PortfolioItem[];
   topEdits: TopEdit[];
-}> = ({ skills, portfolioItems, topEdits }) => {
+  heroContent: HeroContent | null;
+}> = ({ skills, portfolioItems, topEdits, heroContent }) => {
   const homeRef = useRef<HTMLElement>(null);
   const aboutRef = useRef<HTMLElement>(null);
   const skillsRef = useRef<HTMLElement>(null);
@@ -39,7 +40,7 @@ const PortfolioSite: React.FC<{
       <TopoCanvas />
       <Header sections={sections} />
       <main>
-        <Hero ref={homeRef} />
+        <Hero ref={homeRef} data={heroContent} />
         <About ref={aboutRef} />
         <Skills ref={skillsRef} skills={skills} />
         <Portfolio ref={portfolioRef} portfolioItems={portfolioItems} />
@@ -57,6 +58,7 @@ const App: React.FC = () => {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
   const [topEdits, setTopEdits] = useState<TopEdit[]>([]);
+  const [heroContent, setHeroContent] = useState<HeroContent | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -78,6 +80,11 @@ const App: React.FC = () => {
         const { data: editsData, error: editsError } = await supabase.from('top_edits').select('*').order('id');
         if (editsError) throw editsError;
         setTopEdits(editsData);
+
+        const { data: heroData, error: heroError } = await supabase.from('hero_content').select('*').single();
+        if (heroError) throw heroError;
+        setHeroContent(heroData);
+
 
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -101,7 +108,7 @@ const App: React.FC = () => {
     return <Admin />;
   }
 
-  return <PortfolioSite skills={skills} portfolioItems={portfolioItems} topEdits={topEdits} />;
+  return <PortfolioSite skills={skills} portfolioItems={portfolioItems} topEdits={topEdits} heroContent={heroContent} />;
 };
 
 export default App;
