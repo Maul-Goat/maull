@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Skill, PortfolioItem, TopEdit, Message, HeroContent } from '../../types';
+import { Skill, PortfolioItem, TopEdit, Message, HeroContent, VisitorLog } from '../../types';
 
-type Tab = 'hero' | 'skills' | 'portfolio' | 'top-edits' | 'messages';
+type Tab = 'hero' | 'skills' | 'portfolio' | 'top-edits' | 'messages' | 'analytics';
 
 type AddableData = Partial<Omit<Skill, 'id'>> | Partial<Omit<PortfolioItem, 'id'>> | Partial<Omit<TopEdit, 'id'>>;
 
 
 const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
-    const [activeTab, setActiveTab] = useState<Tab>('hero');
+    const [activeTab, setActiveTab] = useState<Tab>('analytics');
     const [loading, setLoading] = useState(false);
     
     // Data states
@@ -17,6 +17,7 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     const [topEdits, setTopEdits] = useState<TopEdit[]>([]);
     const [messages, setMessages] = useState<Message[]>([]);
     const [heroContent, setHeroContent] = useState<HeroContent | null>(null);
+    const [visitorLogs, setVisitorLogs] = useState<VisitorLog[]>([]);
 
     // Form states
     const [newSkill, setNewSkill] = useState({ name: '', img_url: '' });
@@ -47,6 +48,16 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
             setHeroContent(heroData);
             setHeroForm(heroData);
         }
+        
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const { data: logsData } = await supabase
+            .from('visitor_logs')
+            .select('*')
+            .gte('created_at', thirtyDaysAgo.toISOString())
+            .order('created_at', { ascending: false });
+        setVisitorLogs(logsData || []);
+        
         setLoading(false);
     };
 
@@ -192,6 +203,111 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     const renderContent = () => {
         if (loading) return <div className="text-center p-8">Loading data...</div>;
         switch (activeTab) {
+            case 'analytics':
+                const pageViews = visitorLogs.filter(log => log.event_type === 'PAGE_VIEW');
+                const uniqueVisitors = new Set(pageViews.map(log => log.visitor_id)).size;
+                const totalVisits = pageViews.length;
+                const formSubmissions = visitorLogs.filter(log => log.event_type === 'FORM_SUBMIT').length;
+                
+                const visitsByDay = visitorLogs.reduce((acc, log) => {
+                    if (log.event_type !== 'PAGE_VIEW') return acc;
+                    const date = new Date(log.created_at).toLocaleDateString('en-CA'); // YYYY-MM-DD format
+                    acc[date] = (acc[date] || 0) + 1;
+                    return acc;
+                }, {} as Record<string, number>);
+
+                const sortedDays = Object.entries(visitsByDay).sort(([dateA], [dateB]) => new Date(dateB).getTime() - new Date(dateA).getTime());
+                const last7Days = sortedDays.slice(0, 7);
+
+                const deviceData = pageViews.reduce((acc, log) => {
+                    const device = log.device_type || 'Unknown';
+                    acc[device] = (acc[device] || 0) + 1;
+                    return acc;
+                }, {} as Record<string, number>);
+                
+                return (
+                    <div>
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold">Visitor Analytics (Last 30 Days)</h2>
+                            <button onClick={fetchData} className="px-3 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300" disabled={loading}>Refresh</button>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                            <div className="bg-gray-50 p-4 rounded-lg border text-center">
+                                <h3 className="text-gray-500 text-sm font-semibold">Total Visits</h3>
+                                <p className="text-3xl font-bold text-pink-500">{totalVisits}</p>
+                            </div>
+                            <div className="bg-gray-50 p-4 rounded-lg border text-center">
+                                <h3 className="text-gray-500 text-sm font-semibold">Unique Visitors</h3>
+                                <p className="text-3xl font-bold text-pink-500">{uniqueVisitors}</p>
+                            </div>
+                            <div className="bg-gray-50 p-4 rounded-lg border text-center">
+                                <h3 className="text-gray-500 text-sm font-semibold">Form Submissions</h3>
+                                <p className="text-3xl font-bold text-pink-500">{formSubmissions}</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                             <div className="bg-gray-50 p-4 rounded-lg border">
+                                <h3 className="font-bold mb-2">Visits per Day</h3>
+                                <ul>
+                                    {last7Days.length > 0 ? last7Days.map(([date, count]) => (
+                                        <li key={date} className="flex justify-between text-sm py-1 border-b">
+                                            <span>{new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                                            <span className="font-semibold">{count} visit(s)</span>
+                                        </li>
+                                    )) : <p className="text-sm text-gray-500">No visit data for the last 7 days.</p>}
+                                </ul>
+                            </div>
+                            <div className="bg-gray-50 p-4 rounded-lg border">
+                                <h3 className="font-bold mb-2">Visits by Device</h3>
+                                 <ul>
+                                    {Object.entries(deviceData).length > 0 ? Object.entries(deviceData).map(([device, count]) => (
+                                        <li key={device} className="flex justify-between text-sm py-1 border-b">
+                                            <span>{device}</span>
+                                            <span className="font-semibold">{count} visit(s)</span>
+                                        </li>
+                                    )) : <p className="text-sm text-gray-500">No device data available.</p>}
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 className="text-lg font-bold mb-4">Recent Activity</h3>
+                            <div className="overflow-x-auto border rounded-lg max-h-96 overflow-y-auto">
+                                <table className="min-w-full text-sm">
+                                    <thead className="bg-gray-50 sticky top-0">
+                                        <tr>
+                                            <th className="p-3 text-left font-semibold">Time</th>
+                                            <th className="p-3 text-left font-semibold">Event</th>
+                                            <th className="p-3 text-left font-semibold">Device</th>
+                                            <th className="p-3 text-left font-semibold">Visitor ID</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white">
+                                        {visitorLogs.slice(0, 20).map(log => (
+                                            <tr key={log.id} className="border-t hover:bg-gray-50">
+                                                <td className="p-3">{new Date(log.created_at).toLocaleString()}</td>
+                                                <td className="p-3">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${log.event_type === 'PAGE_VIEW' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                                                        {log.event_type.replace('_', ' ')}
+                                                    </span>
+                                                </td>
+                                                <td className="p-3">{log.device_type}</td>
+                                                <td className="p-3 font-mono text-xs text-gray-500" title={log.visitor_id}>{log.visitor_id.substring(0, 8)}...</td>
+                                            </tr>
+                                        ))}
+                                        {visitorLogs.length === 0 && (
+                                            <tr>
+                                                <td colSpan={4} className="text-center p-4 text-gray-500">No activity recorded yet.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                );
             case 'hero':
                 return (
                     <div>
@@ -288,7 +404,7 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     };
 
     const TabButton: React.FC<{ tabName: Tab, label: string }> = ({ tabName, label }) => (
-        <button onClick={() => setActiveTab(tabName)} className={`px-4 py-2 rounded-t-lg ${activeTab === tabName ? 'bg-white border-b-0 border' : 'bg-gray-100'}`}>
+        <button onClick={() => setActiveTab(tabName)} className={`px-4 py-2 rounded-t-lg transition-colors duration-200 ${activeTab === tabName ? 'bg-white border-b-0 border border-gray-200' : 'bg-gray-100 hover:bg-gray-200'}`}>
             {label}
         </button>
     );
@@ -299,15 +415,16 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                 <h1 className="text-xl font-bold text-gray-700">Admin Dashboard</h1>
                 <button onClick={onLogout} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Logout</button>
             </header>
-            <main className="p-8 max-w-4xl mx-auto">
-                <div className="flex border-b mb-4 flex-wrap">
+            <main className="p-4 md:p-8 max-w-5xl mx-auto">
+                <div className="flex border-b border-gray-200 mb-[-1px] flex-wrap">
+                    <TabButton tabName="analytics" label="Analytics" />
                     <TabButton tabName="hero" label="Hero" />
                     <TabButton tabName="messages" label="Messages" />
                     <TabButton tabName="skills" label="Skills" />
                     <TabButton tabName="portfolio" label="Portfolio" />
                     <TabButton tabName="top-edits" label="Top Edits" />
                 </div>
-                <div className="bg-white p-6 rounded-b-lg rounded-r-lg shadow-md">
+                <div className="bg-white p-4 sm:p-6 rounded-b-lg rounded-r-lg shadow-md border border-gray-200">
                    {renderContent()}
                 </div>
             </main>

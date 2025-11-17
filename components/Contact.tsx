@@ -35,6 +35,29 @@ const Contact = forwardRef<HTMLElement>((props, ref) => {
         
         alert('Thank you! Your message has been sent.');
         form.reset();
+        
+        // --- ANALYTICS LOGGING ---
+        try {
+            const visitorId = localStorage.getItem('visitorId');
+            if (visitorId) {
+                const getDeviceType = (): 'Desktop' | 'Mobile' | 'Unknown' => {
+                    const ua = navigator.userAgent;
+                    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) return "Desktop";
+                    if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) return "Mobile";
+                    return "Desktop";
+                };
+
+                await supabase.from('visitor_logs').insert([{
+                    visitor_id: visitorId,
+                    event_type: 'FORM_SUBMIT',
+                    device_type: getDeviceType(),
+                    user_agent: navigator.userAgent
+                }]);
+            }
+        } catch (analyticsError) {
+            console.warn('Failed to log form submission:', analyticsError);
+        }
+        // --- END ANALYTICS LOGGING ---
 
     } catch (error) {
         console.error('Error sending message:', error);

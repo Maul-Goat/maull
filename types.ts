@@ -35,3 +35,14 @@ export interface HeroContent {
   description: string;
   image_url: string;
 }
+
+export interface VisitorLog {
+  id: number;
+  created_at: string;
+  visitor_id: string;
+  event_type: 'PAGE_VIEW' | 'FORM_SUBMIT';
+  device_type: 'Desktop' | 'Mobile' | 'Unknown';
+  user_agent: string;
+  country?: string;
+  ip_address?: string;
+}

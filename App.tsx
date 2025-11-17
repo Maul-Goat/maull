@@ -102,6 +102,58 @@ const App: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const getVisitorId = () => {
+        let visitorId = localStorage.getItem('visitorId');
+        if (!visitorId) {
+            visitorId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+            localStorage.setItem('visitorId', visitorId);
+        }
+        return visitorId;
+    };
+
+    const getDeviceType = (): 'Desktop' | 'Mobile' | 'Unknown' => {
+        const ua = navigator.userAgent;
+        if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+            return "Desktop";
+        }
+        if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+            return "Mobile";
+        }
+        return "Desktop";
+    };
+
+    const logVisit = async () => {
+        try {
+            // Hanya log jika bukan admin
+            if (window.location.hash !== '#admin') {
+                const visitorId = getVisitorId();
+                const { error } = await supabase.from('visitor_logs').insert([
+                    { 
+                        visitor_id: visitorId,
+                        event_type: 'PAGE_VIEW',
+                        device_type: getDeviceType(),
+                        user_agent: navigator.userAgent
+                    }
+                ]);
+                if (error) {
+                    console.warn("Analytics logging failed:", error.message);
+                }
+            }
+        } catch (e) {
+             if (e instanceof Error) {
+                console.warn("Analytics logging failed:", e.message);
+            }
+        }
+    };
+
+    logVisit();
+}, []);
+
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
