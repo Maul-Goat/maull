@@ -32,10 +32,7 @@ const Header: React.FC<HeaderProps> = ({ sections }) => {
   return (
     <header className="bg-gradient-to-br from-[rgba(230,200,215,0.92)] to-[rgba(200,220,240,0.92)] py-5 shadow-lg fixed w-full top-0 z-50 backdrop-blur-md border-b border-white/30 animate-headerSlide">
       <div className="container w-[90%] max-w-7xl mx-auto">
-        <nav className="flex justify-between items-center">
-          <a href="#home" onClick={(e) => { e.preventDefault(); handleScrollTo('home'); }} className="flex items-center transition-transform duration-300 hover:scale-105 hover:drop-shadow-[0_0_15px_rgba(200,168,200,0.4)]">
-            <img src="https://i.pinimg.com/736x/1a/dd/df/1adddf98208192736c16dbc00206b217.jpg" alt="Achmad Maulana Logo" className="h-12 rounded-full" />
-          </a>
+        <nav className="flex justify-end items-center">
           <ul className={`lg:flex items-center list-none gap-0 ${isNavOpen ? 'flex flex-col absolute top-full right-0 bg-white/90 w-full text-center shadow-lg p-5' : 'hidden'}`}>
             {navLinks.map((link, index) => (
               <li key={link.href} className="my-2 lg:my-0 lg:mx-7">
