@@ -25,7 +25,7 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     const [newPortfolio, setNewPortfolio] = useState({ title: '', description: '', img_url: '', project_url: '' });
     const [newPortfolioFile, setNewPortfolioFile] = useState<File | null>(null);
 
-    const [newTopEdit, setNewTopEdit] = useState({ title: '', description: '', img_url: '' });
+    const [newTopEdit, setNewTopEdit] = useState({ title: '', description: '', img_url: '', tiktok_url: '' });
     const [newTopEditFile, setNewTopEditFile] = useState<File | null>(null);
     
     const [heroForm, setHeroForm] = useState<HeroContent>({ id: 1, title: '', subtitle: '', description: '', image_url: '' });
@@ -119,7 +119,7 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
             setNewSkillFile(null);
             setNewPortfolio({ title: '', description: '', img_url: '', project_url: '' });
             setNewPortfolioFile(null);
-            setNewTopEdit({ title: '', description: '', img_url: '' });
+            setNewTopEdit({ title: '', description: '', img_url: '', tiktok_url: '' });
             setNewTopEditFile(null);
             await fetchData();
         }
@@ -278,6 +278,7 @@ const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                             <h3 className="font-bold">Add New Top Edit</h3>
                             <input value={newTopEdit.title} onChange={e => setNewTopEdit({...newTopEdit, title: e.target.value})} placeholder="Title" className="w-full p-2 border rounded" required/>
                             <textarea value={newTopEdit.description} onChange={e => setNewTopEdit({...newTopEdit, description: e.target.value})} placeholder="Description" className="w-full p-2 border rounded" required/>
+                            <input value={newTopEdit.tiktok_url || ''} onChange={e => setNewTopEdit({...newTopEdit, tiktok_url: e.target.value})} placeholder="TikTok URL (Optional)" className="w-full p-2 border rounded" />
                             <input type="file" accept="image/*,video/*" onChange={handleFileChange(setNewTopEditFile)} className="w-full p-2 border rounded" required />
                             <button type="submit" className="px-4 py-2 bg-pink-500 text-white rounded" disabled={loading}>{loading ? 'Adding...' : 'Add Edit'}</button>
                         </form>

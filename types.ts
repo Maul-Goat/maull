@@ -17,6 +17,7 @@ export interface TopEdit {
   title: string;
   description: string;
   img_url: string;
+  tiktok_url?: string;
 }
 
 export interface Message {

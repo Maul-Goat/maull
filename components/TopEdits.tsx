@@ -217,7 +217,13 @@ const TopEdits = forwardRef<HTMLElement, TopEditsProps>(({ edits }, ref) => {
                     )}
                 </div>
                 <div className="p-6 flex-1 flex flex-col justify-center bg-white/5">
-                  <h3 className="text-lg font-semibold mb-2 text-[#5c3d2e]">{edit.title}</h3>
+                  {edit.tiktok_url ? (
+                    <a href={edit.tiktok_url} target="_blank" rel="noopener noreferrer" className="no-underline group/link">
+                        <h3 className="text-lg font-semibold mb-2 text-[#5c3d2e] transition-colors group-hover/link:text-[#FF85B5]">{edit.title}</h3>
+                    </a>
+                  ) : (
+                    <h3 className="text-lg font-semibold mb-2 text-[#5c3d2e]">{edit.title}</h3>
+                  )}
                   <p className="text-[#666] text-sm leading-relaxed">{edit.description}</p>
                 </div>
               </div>
