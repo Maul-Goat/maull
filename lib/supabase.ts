@@ -16,8 +16,8 @@ import { createClient } from '@supabase/supabase-js';
 //
 // ===================================================================================
 
-const supabaseUrl = 'REPLACE_WITH_YOUR_SUPABASE_URL'; // CONTOH: 'https://xyzabc.supabase.co'
-const supabaseAnonKey = 'REPLACE_WITH_YOUR_SUPABASE_ANON_KEY'; // CONTOH: 'eyJhbGciOiJIUzI1Ni...'
+const supabaseUrl = 'https://lqcrvwvzkgafxjnierfu.supabase.co'; // CONTOH: 'https://xyzabc.supabase.co'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxY3J2d3Z6a2dhZnhqbmllcmZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMyOTgzMjQsImV4cCI6MjA3ODg3NDMyNH0.xyf-dKLiiqBdlF6-BVrLLKUHFvYzHPka5KdfyDY3e4E'; // CONTOH: 'eyJhbGciOiJIUzI1Ni...'
 
 
 // Pemeriksaan ini membantu pengembang mengingat untuk mengkonfigurasi kredensial Supabase mereka.
