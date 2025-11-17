@@ -73,6 +73,37 @@ const TopEdits = forwardRef<HTMLElement, TopEditsProps>(({ edits }, ref) => {
         };
     }, []);
 
+    // Observer for lazy playing videos
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    const videoElement = entry.target as HTMLVideoElement;
+                    if (entry.isIntersecting) {
+                        videoElement.play().catch(e => console.warn("Video auto-play was prevented:", e));
+                    } else {
+                        videoElement.pause();
+                    }
+                });
+            },
+            {
+                root: sliderRef.current, // Use the slider as the viewport
+                threshold: 0.5 // Play when 50% of the video is visible
+            }
+        );
+
+        const currentVideoRefs = videoRefs.current;
+        currentVideoRefs.forEach(video => {
+            if (video) observer.observe(video);
+        });
+
+        return () => {
+            currentVideoRefs.forEach(video => {
+                if (video) observer.unobserve(video);
+            });
+        };
+    }, [allEdits.length]); // Re-run observer setup if edits change
+
 
     // JS-based auto-scroll animation
     useEffect(() => {
@@ -197,8 +228,8 @@ const TopEdits = forwardRef<HTMLElement, TopEditsProps>(({ edits }, ref) => {
                         <video
                             ref={el => { videoRefs.current[index] = el; }}
                             src={url}
+                            poster={url}
                             className="w-full h-full object-cover pointer-events-none"
-                            autoPlay
                             loop
                             muted
                             playsInline
