@@ -35,7 +35,7 @@ const SoundOffIcon = () => (
 const TopEdits = forwardRef<HTMLElement, TopEditsProps>(({ edits }, ref) => {
     const sectionRef = useRef<HTMLDivElement>(null);
     const sliderRef = useRef<HTMLDivElement>(null);
-    const isInView = useInView(sectionRef);
+    const isInViewForAnimation = useInView(sectionRef);
 
     const [isDown, setIsDown] = useState(false);
     const [startX, setStartX] = useState(0);
@@ -44,15 +44,40 @@ const TopEdits = forwardRef<HTMLElement, TopEditsProps>(({ edits }, ref) => {
     
     const [unmutedVideoIndex, setUnmutedVideoIndex] = useState<number | null>(null);
     const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+    
+    const [isSectionInViewForAudio, setIsSectionInViewForAudio] = useState(false);
 
     // Duplicate for infinite scroll effect
     const allEdits = edits.length > 0 ? [...edits, ...edits] : [];
+
+    // Observer for continuous visibility tracking for audio muting logic
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setIsSectionInViewForAudio(entry.isIntersecting);
+            },
+            {
+                threshold: 0.1, // Trigger when 10% of the element is visible
+            }
+        );
+
+        const currentRef = sectionRef.current;
+        if (currentRef) {
+            observer.observe(currentRef);
+        }
+
+        return () => {
+            if (currentRef) {
+                observer.unobserve(currentRef);
+            }
+        };
+    }, []);
 
 
     // JS-based auto-scroll animation
     useEffect(() => {
         const slider = sliderRef.current;
-        if (!slider || !isInView || allEdits.length === 0) return;
+        if (!slider || !isInViewForAnimation || allEdits.length === 0) return;
 
         let animationFrameId: number;
 
@@ -73,18 +98,18 @@ const TopEdits = forwardRef<HTMLElement, TopEditsProps>(({ edits }, ref) => {
         return () => {
             cancelAnimationFrame(animationFrameId);
         };
-    }, [isInView, isDown, isHovering, allEdits.length]);
+    }, [isInViewForAnimation, isDown, isHovering, allEdits.length]);
 
     // Mute video when scrolling out of view
     useEffect(() => {
-        if (!isInView && unmutedVideoIndex !== null) {
+        if (!isSectionInViewForAudio && unmutedVideoIndex !== null) {
             const video = videoRefs.current[unmutedVideoIndex];
             if (video) {
                 video.muted = true;
             }
             setUnmutedVideoIndex(null);
         }
-    }, [isInView, unmutedVideoIndex]);
+    }, [isSectionInViewForAudio, unmutedVideoIndex]);
 
     const handleVideoClick = (index: number) => {
         const currentlyUnmuted = unmutedVideoIndex;
@@ -165,7 +190,7 @@ const TopEdits = forwardRef<HTMLElement, TopEditsProps>(({ edits }, ref) => {
               const url = edit.img_url;
               const isMediaVideo = isVideo(url);
               return (
-              <div key={index} className={`flex-shrink-0 w-[300px] h-[520px] bg-white/10 rounded-2xl overflow-hidden backdrop-blur-md border border-white/20 transition-all duration-300 shadow-lg flex flex-col hover:-translate-y-4 hover:scale-105 hover:shadow-[0_20px_50px_rgba(255,133,181,0.25)] hover:border-pink-300/40 slide-in-bottom ${isInView ? 'in-view' : ''}`} style={{ animationDelay: `${index * 0.1}s` }}>
+              <div key={index} className={`flex-shrink-0 w-[300px] h-[520px] bg-white/10 rounded-2xl overflow-hidden backdrop-blur-md border border-white/20 transition-all duration-300 shadow-lg flex flex-col hover:-translate-y-4 hover:scale-105 hover:shadow-[0_20px_50px_rgba(255,133,181,0.25)] hover:border-pink-300/40 slide-in-bottom ${isInViewForAnimation ? 'in-view' : ''}`} style={{ animationDelay: `${index * 0.1}s` }}>
                 <div className="w-full h-[400px] overflow-hidden relative group/video">
                     {isMediaVideo ? (
                        <>

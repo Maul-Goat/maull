@@ -1,4 +1,3 @@
-
 import React, { forwardRef, useRef, useState, useEffect, MouseEvent, TouchEvent } from 'react';
 import useInView from '../hooks/useInView';
 import { Skill } from '../types';
@@ -116,11 +115,6 @@ const Skills = forwardRef<HTMLElement, SkillsProps>(({ skills }, ref) => {
           Tech Stack & Tools
         </h2>
         <div ref={containerRef} className={`relative flex items-center justify-center min-h-[500px] md:min-h-[700px] w-full mt-12 slide-in-bottom ${isInView ? 'in-view' : ''}`}>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 flex items-center justify-center z-10">
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#FFB6D9] to-[#FF85B5] rounded-2xl shadow-[0_0_50px_rgba(255,133,181,0.6)] animate-centerPulse">
-              <span className="text-5xl font-bold text-white">A</span>
-            </div>
-          </div>
           
             {skills.map((skill, index) => {
                 const pos = positions.find(p => p.id === skill.id);
