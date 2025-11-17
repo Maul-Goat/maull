@@ -190,12 +190,11 @@ const TopEdits = forwardRef<HTMLElement, TopEditsProps>(({ edits }, ref) => {
               const url = edit.img_url;
               const isMediaVideo = isVideo(url);
               return (
-              <div key={index} className={`flex-shrink-0 w-[240px] h-[420px] sm:w-[300px] sm:h-[520px] bg-white/10 rounded-2xl overflow-hidden backdrop-blur-md border border-white/20 transition-all duration-300 shadow-lg flex flex-col hover:-translate-y-4 hover:scale-105 hover:shadow-[0_20px_50px_rgba(255,133,181,0.25)] hover:border-pink-300/40 slide-in-bottom ${isInViewForAnimation ? 'in-view' : ''}`} style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="w-full h-[320px] sm:h-[400px] overflow-hidden relative group/video">
+              <div key={index} className={`flex-shrink-0 w-[240px] sm:w-[300px] bg-white/10 rounded-2xl overflow-hidden backdrop-blur-md border border-white/20 transition-all duration-300 shadow-lg flex flex-col hover:-translate-y-4 hover:scale-105 hover:shadow-[0_20px_50px_rgba(255,133,181,0.25)] hover:border-pink-300/40 slide-in-bottom ${isInViewForAnimation ? 'in-view' : ''}`} style={{ animationDelay: `${index * 0.1}s` }}>
+                <div className="w-full aspect-[3/4] overflow-hidden relative group/video">
                     {isMediaVideo ? (
                        <>
                         <video
-                            // FIX: Changed ref callback to use a block body to ensure it returns void, resolving a TypeScript type error.
                             ref={el => { videoRefs.current[index] = el; }}
                             src={url}
                             className="w-full h-full object-cover pointer-events-none"
