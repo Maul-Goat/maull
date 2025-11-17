@@ -39,7 +39,7 @@ const About = forwardRef<HTMLElement>((props, ref) => {
             </div>
           ))}
         </div>
-        <div className={`bg-white/10 p-8 rounded-2xl backdrop-blur-md border border-white/25 text-center slide-in-bottom ${isInView ? 'in-view' : ''}`} style={{ animationDelay: '0.3s' }}>
+        <div className={`bg-white/10 p-8 rounded-2xl backdrop-blur-md border border-white/25 text-left slide-in-bottom ${isInView ? 'in-view' : ''}`} style={{ animationDelay: '0.3s' }}>
           <p className="text-[#5c3d2e] text-base md:text-lg leading-loose font-normal mb-4">
             I'm a passionate tech enthusiast currently pursuing my university degree while balancing my twin passions for coding and video editing. My journey in programming has equipped me with problem-solving skills that complement my creative side, which thrives in visual storytelling through video production.
           </p>

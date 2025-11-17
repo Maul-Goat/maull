@@ -1,4 +1,3 @@
-
 import React, { forwardRef, useRef, useState, PointerEvent as ReactPointerEvent, useEffect } from 'react';
 import useInView from '../hooks/useInView';
 import { TopEdit } from '../types';
@@ -6,6 +5,20 @@ import { TopEdit } from '../types';
 interface TopEditsProps {
     edits: TopEdit[];
 }
+
+const isVideo = (url: string): boolean => {
+    if (!url) return false;
+    const videoExtensions = ['.mp4', '.webm', '.mov', '.ogg'];
+    try {
+        // Using toLowerCase() to make the check case-insensitive
+        const path = new URL(url).pathname.toLowerCase();
+        return videoExtensions.some(ext => path.endsWith(ext));
+    } catch (e) {
+        // If URL is invalid or relative, it might throw. Fallback to simple check.
+        const lowerUrl = url.toLowerCase();
+        return videoExtensions.some(ext => lowerUrl.endsWith(ext));
+    }
+};
 
 const TopEdits = forwardRef<HTMLElement, TopEditsProps>(({ edits }, ref) => {
     const sectionRef = useRef<HTMLDivElement>(null);
@@ -99,17 +112,31 @@ const TopEdits = forwardRef<HTMLElement, TopEditsProps>(({ edits }, ref) => {
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
           >
-            {allEdits.map((edit, index) => (
+            {allEdits.map((edit, index) => {
+              const url = edit.img_url;
+              const isMediaVideo = isVideo(url);
+              return (
               <div key={index} className={`flex-shrink-0 w-[300px] h-[520px] bg-white/10 rounded-2xl overflow-hidden backdrop-blur-md border border-white/20 transition-all duration-300 shadow-lg flex flex-col hover:-translate-y-4 hover:scale-105 hover:shadow-[0_20px_50px_rgba(255,133,181,0.25)] hover:border-pink-300/40 slide-in-bottom ${isInView ? 'in-view' : ''}`} style={{ animationDelay: `${index * 0.1}s` }}>
                 <div className="w-full h-[400px] overflow-hidden relative">
-                  <img src={edit.img_url} alt={edit.title} className="w-full h-full object-cover transition-transform duration-300 pointer-events-none" />
+                    {isMediaVideo ? (
+                        <video
+                            src={url}
+                            className="w-full h-full object-cover pointer-events-none"
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                        />
+                    ) : (
+                        <img src={edit.img_url} alt={edit.title} className="w-full h-full object-cover transition-transform duration-300 pointer-events-none" />
+                    )}
                 </div>
                 <div className="p-6 flex-1 flex flex-col justify-center bg-white/5">
                   <h3 className="text-lg font-semibold mb-2 text-[#5c3d2e]">{edit.title}</h3>
                   <p className="text-[#666] text-sm leading-relaxed">{edit.description}</p>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </div>
       </div>
