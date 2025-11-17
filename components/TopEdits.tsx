@@ -178,7 +178,7 @@ const TopEdits = forwardRef<HTMLElement, TopEditsProps>(({ edits }, ref) => {
             <div className="absolute top-0 right-0 w-24 h-full bg-gradient-to-l from-white/0 via-pink-100/10 to-transparent z-10 pointer-events-none"></div>
           <div 
             ref={sliderRef}
-            className="flex gap-8 py-4 cursor-grab select-none overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex gap-4 sm:gap-8 py-4 cursor-grab select-none overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             onPointerDown={handlePointerDown}
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerLeave}
@@ -190,8 +190,8 @@ const TopEdits = forwardRef<HTMLElement, TopEditsProps>(({ edits }, ref) => {
               const url = edit.img_url;
               const isMediaVideo = isVideo(url);
               return (
-              <div key={index} className={`flex-shrink-0 w-[300px] h-[520px] bg-white/10 rounded-2xl overflow-hidden backdrop-blur-md border border-white/20 transition-all duration-300 shadow-lg flex flex-col hover:-translate-y-4 hover:scale-105 hover:shadow-[0_20px_50px_rgba(255,133,181,0.25)] hover:border-pink-300/40 slide-in-bottom ${isInViewForAnimation ? 'in-view' : ''}`} style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="w-full h-[400px] overflow-hidden relative group/video">
+              <div key={index} className={`flex-shrink-0 w-[240px] h-[420px] sm:w-[300px] sm:h-[520px] bg-white/10 rounded-2xl overflow-hidden backdrop-blur-md border border-white/20 transition-all duration-300 shadow-lg flex flex-col hover:-translate-y-4 hover:scale-105 hover:shadow-[0_20px_50px_rgba(255,133,181,0.25)] hover:border-pink-300/40 slide-in-bottom ${isInViewForAnimation ? 'in-view' : ''}`} style={{ animationDelay: `${index * 0.1}s` }}>
+                <div className="w-full h-[320px] sm:h-[400px] overflow-hidden relative group/video">
                     {isMediaVideo ? (
                        <>
                         <video

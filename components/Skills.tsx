@@ -22,13 +22,15 @@ const Skills = forwardRef<HTMLElement, SkillsProps>(({ skills }, ref) => {
 
     const randomAnimations = ["animate-randomFloat1", "animate-randomFloat2", "animate-randomFloat3"];
 
+    const getIconSize = () => window.innerWidth < 768 ? 96 : 128; // 96px (w-24) for mobile, 128px (w-32) for desktop
+
     useEffect(() => {
         const container = containerRef.current;
         if (!container || skills.length === 0) return;
 
         const observer = new ResizeObserver(() => {
             const containerRect = container.getBoundingClientRect();
-            const iconSize = 128; // w-32
+            const iconSize = getIconSize();
 
             if (containerRect.width > 0 && positions.length === 0) {
                  const calculatedPositions = skills.map(skill => ({
@@ -79,7 +81,7 @@ const Skills = forwardRef<HTMLElement, SkillsProps>(({ skills }, ref) => {
         let newX = clientX - containerRect.left - draggedIcon.offsetX;
         let newY = clientY - containerRect.top - draggedIcon.offsetY;
         
-        const iconSize = 128; // w-32 = 128px
+        const iconSize = getIconSize();
         newX = Math.max(0, Math.min(newX, containerRect.width - iconSize));
         newY = Math.max(0, Math.min(newY, containerRect.height - iconSize));
 
@@ -125,7 +127,7 @@ const Skills = forwardRef<HTMLElement, SkillsProps>(({ skills }, ref) => {
                 return (
                     <div 
                         key={skill.id}
-                        className={`absolute w-32 h-32 skill-icon-wrapper ${animationClass}`}
+                        className={`absolute w-24 h-24 md:w-32 md:h-32 skill-icon-wrapper ${animationClass}`}
                         style={{
                             left: `${pos.x}px`,
                             top: `${pos.y}px`,
@@ -134,7 +136,7 @@ const Skills = forwardRef<HTMLElement, SkillsProps>(({ skills }, ref) => {
                         onTouchStart={(e) => handleDragStart(e, skill.id)}
                     >
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-300/80 to-pink-500/80 rounded-2xl border-2 border-white/60 shadow-[0_8px_25px_rgba(255,133,181,0.4)] transition-all duration-300 hover:scale-110 hover:shadow-[0_12px_40px_rgba(255,133,181,0.6)] hover:border-white/90 cursor-grab active:cursor-grabbing">
-                            <img src={skill.img_url} alt={skill.name} className="w-24 h-24 object-contain pointer-events-none" />
+                            <img src={skill.img_url} alt={skill.name} className="w-16 h-16 md:w-24 md:h-24 object-contain pointer-events-none" />
                         </div>
                     </div>
                 );

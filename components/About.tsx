@@ -10,7 +10,7 @@ const aboutItems = [
   },
   {
     icon: '🎬',
-    title: 'Video Editor',
+    title: 'Video Editor & Filmmaker',
     description: 'Specializing in cinematic editing, motion graphics, and compelling visual narratives',
   },
   {
